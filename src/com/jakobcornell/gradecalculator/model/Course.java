@@ -4,7 +4,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class Course {
+public class Course implements java.io.Serializable {
+	private static final long serialVersionUID = 0;
+
 	public final Map<UUID, Category> categories;
 	public String name;
 

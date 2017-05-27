@@ -2,7 +2,9 @@ package com.jakobcornell.gradecalculator.model;
 
 import java.util.UUID;
 
-public class Assignment {
+public class Assignment implements java.io.Serializable {
+	private static final long serialVersionUID = 0;
+
 	public final UUID id;
 	public String name;
 	protected double weight;

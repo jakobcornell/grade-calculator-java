@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class Category {
+public class Category implements java.io.Serializable {
+	private static final long serialVersionUID = 0;
+
 	public final UUID id;
 	public final Map<UUID, Assignment> assignments;
 	public String name;
@@ -19,8 +21,8 @@ public class Category {
 		id = UUID.randomUUID();
 		assignments = new HashMap<UUID, Assignment>();
 		this.name = name;
-		this.weight = weight;
 		this.useWeights = useWeights;
+		setWeight(weight);
 	}
 
 	public double getWeight() {
