@@ -1,0 +1,21 @@
+<!-- Ant build file -->
+
+<project name="grade calculator">
+	<property name="package-root" value="com/jakobcornell/gradecalculator" />
+
+	<target name="build-setup">
+		<mkdir dir="bin" />
+	</target>
+
+	<target name="build-model" depends="build-setup">
+		<javac srcdir="src" destdir="bin" includes="${package-root}/model/*" />
+	</target>
+
+	<target name="build-cli" depends="build-setup">
+		<javac srcdir="src" destdir="bin" includes="${package-root}/CliClient.java" />
+	</target>
+
+	<target name="clean">
+		<delete dir="bin" />
+	</target>
+</project>
