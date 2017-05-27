@@ -11,7 +11,7 @@
 		<javac srcdir="src" destdir="bin" includes="${package-root}/model/*" />
 	</target>
 
-	<target name="build-cli" depends="build-setup">
+	<target name="build-cli" depends="build-model">
 		<javac srcdir="src" destdir="bin" includes="${package-root}/CliClient.java" />
 	</target>
 
