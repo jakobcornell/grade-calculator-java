@@ -3,6 +3,7 @@ package com.jakobcornell.gradecalculator;
 import com.jakobcornell.gradecalculator.model.Course;
 import com.jakobcornell.gradecalculator.model.Category;
 import com.jakobcornell.gradecalculator.model.Assignment;
+import com.jakobcornell.gradecalculator.model.ScoringException;
 
 import java.util.Scanner;
 import java.util.Optional;
@@ -19,13 +20,19 @@ public class CliClient {
 		BAD_COMMAND("Unrecognized command. Try \"help\" for a list of commands."),
 		NO_COURSE("No course loaded. Use \"new course\" or \"open\" to load one."),
 		BAD_CATEGORY("Unrecognized category."),
+		BAD_ASSIGNMENT("Unrecognized assignment."),
 		CATEGORY_CREATE("Error creating category: %s"),
+		ASSIGNMENT_CREATE("Error creating assignment: %s"),
+		CATEGORY_UPDATE("Error updating category: %s"),
+		ASSIGNMENT_UPDATE("Error updating assignment: %s"),
 		FILENAME_MISSING("Filename missing."),
 		COURSE_READ("Error reading course: %s"),
-		COURSE_WRITE("Error writing course: %s");
+		COURSE_WRITE("Error writing course: %s"),
+		BAD_ATTRIBUTE("Urecognized attribute"),
+		SCORING_ERROR("Error calculating score: %s");
 
 		protected String message;
-	
+
 		private Messages(String message) {
 			this.message = message;
 		}
@@ -61,14 +68,18 @@ public class CliClient {
 
 				} else if (tokens[0].equals("save")) {
 
-					if (tokens.length == 2) {
-						try (
-							FileOutputStream fileOut = new FileOutputStream(tokens[1]);
-							ObjectOutputStream courseOut = new ObjectOutputStream(fileOut);
-						) {
-							courseOut.writeObject(course);
-						} catch (IOException e) {
-							System.err.println(String.format(Messages.COURSE_WRITE.toString(), e.getMessage()));
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						if (tokens.length == 2) {
+							try (
+								FileOutputStream fileOut = new FileOutputStream(tokens[1]);
+								ObjectOutputStream courseOut = new ObjectOutputStream(fileOut);
+							) {
+								courseOut.writeObject(course);
+							} catch (IOException e) {
+								System.err.println(String.format(Messages.COURSE_WRITE.toString(), e.getMessage()));
+							}
 						}
 					}
 
@@ -136,39 +147,260 @@ public class CliClient {
 
 				} else if (command.equals("assignment info")) {
 
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("category id: ");
+						String categoryId = scanner.nextLine();
+						Optional<Category> categoryResult = getCategory(categoryId);
+						if (categoryResult.isPresent()) {
+							Category category = categoryResult.get();
+							System.out.print("assignment id: ");
+							String assignmentId = scanner.nextLine();
+							Optional<Assignment> assignmentResult = getAssignment(category, assignmentId);
+							if (assignmentResult.isPresent()) {
+								Assignment assignment = assignmentResult.get();
+								System.out.println(String.format("assignment %s:", assignment.id));
+								System.out.println(String.format("\tname: %s", assignment.name));
+								System.out.println(String.format("\tweight: %f", assignment.getWeight()));
+								System.out.println(String.format("\tearned: %f", assignment.getEarned()));
+								System.out.println(String.format("\tpossible: %f", assignment.getPossible()));
+							} else {
+								System.err.println(Messages.BAD_ASSIGNMENT);
+							}
+						} else {
+							System.err.println(Messages.BAD_CATEGORY);
+						}
+					}
+
 				} else if (command.equals("add category")) {
 
-					System.out.print("name: ");
-					String name = scanner.nextLine();
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("name: ");
+						String name = scanner.nextLine();
 
-					System.out.print("weight: ");
-					double weight = scanner.nextDouble();
-					scanner.nextLine();
+						System.out.print("weight: ");
+						double weight = scanner.nextDouble();
+						scanner.nextLine();
 
-					System.out.print("uses weights (true|false): ");
-					boolean useWeights = scanner.nextBoolean();
-					scanner.nextLine();
+						System.out.print("uses weights (true|false): ");
+						boolean useWeights = scanner.nextBoolean();
+						scanner.nextLine();
 
-					Category category;
-					try {
-						category = new Category(name, weight, useWeights);
-						course.categories.put(category.id, category);
-					} catch (IllegalArgumentException e) {
-						System.err.println(String.format(Messages.CATEGORY_CREATE.toString(), e.getMessage()));
+						Category category;
+						try {
+							category = new Category(name, weight, useWeights);
+							course.categories.put(category.id, category);
+						} catch (IllegalArgumentException e) {
+							System.err.println(String.format(Messages.CATEGORY_CREATE.toString(), e.getMessage()));
+						}
 					}
 
 				} else if (command.equals("add assignment")) {
-				
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("category id: ");
+						String id = scanner.nextLine();
+						Optional<Category> result = getCategory(id);
+						if (result.isPresent()) {
+							Category category = result.get();
+
+							System.out.print("name: ");
+							String name = scanner.nextLine();
+
+							System.out.print("weight: ");
+							double weight = scanner.nextDouble();
+							scanner.nextLine();
+
+							System.out.print("points earned: ");
+							double earned = scanner.nextDouble();
+							scanner.nextLine();
+
+							System.out.print("points possible: ");
+							double possible = scanner.nextDouble();
+							scanner.nextLine();
+
+							Assignment assignment;
+							try {
+								assignment = new Assignment(name, weight, earned, possible);
+								category.assignments.put(assignment.id, assignment);
+							} catch (IllegalArgumentException e) {
+								System.err.println(String.format(Messages.ASSIGNMENT_CREATE.toString(), e.getMessage()));
+							}
+
+						} else {
+							System.err.println(Messages.BAD_CATEGORY);
+						}
+					}
+
+				} else if (command.equals("update course")) {
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("new name: ");
+						String name = scanner.nextLine();
+						course.name = name;
+					}
+
 				} else if (command.equals("update category")) {
-				
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("category id: ");
+						String id = scanner.nextLine();
+						Optional<Category> result = getCategory(id);
+
+						if (result.isPresent()) {
+							Category category = result.get();
+							System.out.print("update attribute (name|weight|uses weights): ");
+							String attribute = scanner.nextLine();
+
+							if (attribute.equals("name")) {
+								System.out.print("new name: ");
+								String name = scanner.nextLine();
+								category.name = name;
+							} else if (attribute.equals("weight")) {
+								System.out.print("new weight: ");
+								double weight = scanner.nextDouble();
+								scanner.nextLine();
+								try {
+									category.setWeight(weight);
+								} catch (IllegalArgumentException e) {
+									System.err.println(String.format(Messages.CATEGORY_UPDATE.toString(), e.getMessage()));
+								}
+							} else if (attribute.equals("uses weights")) {
+								System.out.print("uses weights? (true|false): ");
+								boolean useWeights = scanner.nextBoolean();
+								scanner.nextLine();
+								category.useWeights = useWeights;
+							} else {
+								System.err.println(Messages.BAD_ATTRIBUTE);
+							}
+						} else {
+							System.err.println(Messages.BAD_CATEGORY);
+						}
+					}
+
 				} else if (command.equals("update assignment")) {
-					
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("category id: ");
+						String categoryId = scanner.nextLine();
+						Optional<Category> categoryResult = getCategory(categoryId);
+
+						if (categoryResult.isPresent()) {
+							Category category = categoryResult.get();
+							System.out.print("assignment id: ");
+							String assignmentId = scanner.nextLine();
+							Optional<Assignment> assignmentResult = getAssignment(category, assignmentId);
+
+							if (assignmentResult.isPresent()) {
+								Assignment assignment = assignmentResult.get();
+								System.out.print("update attribute (name|weight|earned|possible): ");
+								String attribute = scanner.nextLine();
+								if (attribute.equals("name")) {
+									System.out.print("new name: ");
+									String name = scanner.nextLine();
+									assignment.name = name;
+								} else if (attribute.equals("weight")) {
+									System.out.print("new weight: ");
+									double weight = scanner.nextDouble();
+									scanner.nextLine();
+									try {
+										assignment.setWeight(weight);
+									} catch (IllegalArgumentException e) {
+										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
+									}
+								} else if (attribute.equals("earned")) {
+									System.out.print("points earned: ");
+									double earned = scanner.nextDouble();
+									scanner.nextLine();
+									try {
+										assignment.setEarned(earned);
+									} catch (IllegalArgumentException e) {
+										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
+									}
+								} else if (attribute.equals("possible")) {
+									System.out.print("points possible: ");
+									double possible = scanner.nextDouble();
+									scanner.nextLine();
+									try {
+										assignment.setPossible(possible);
+									} catch (IllegalArgumentException e) {
+										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
+									}
+								} else {
+									System.err.println(Messages.BAD_ATTRIBUTE);
+								}
+							}
+						} else {
+							System.err.println(Messages.BAD_CATEGORY);
+						}
+					}
+
 				} else if (command.equals("remove category")) {
-					
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("category id: ");
+						String id = scanner.nextLine();
+						Optional<Category> result = getCategory(id);
+
+						if (result.isPresent()) {
+							course.categories.remove(result.get().id);
+						} else {
+							System.err.println(Messages.BAD_CATEGORY);
+						}
+					}
+
 				} else if (command.equals("remove assignment")) {
-					
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						System.out.print("category id: ");
+						String categoryId = scanner.nextLine();
+						Optional<Category> categoryResult = getCategory(categoryId);
+
+						if (categoryResult.isPresent()) {
+							Category category = categoryResult.get();
+							System.out.print("assignment id: ");
+							String assignmentId = scanner.nextLine();
+							Optional<Assignment> assignmentResult = getAssignment(category, assignmentId);
+
+							if (assignmentResult.isPresent()) {
+								category.assignments.remove(assignmentResult.get().id);
+							} else {
+								System.err.println(Messages.BAD_ASSIGNMENT);
+							}
+						} else {
+							System.err.println(Messages.BAD_CATEGORY);
+						}
+					}
+
 				} else if (command.equals("grade")) {
-					
+
+					if (course == null) {
+						System.err.println(Messages.NO_COURSE);
+					} else {
+						double score;
+						try {
+							score = course.score();
+							System.out.println(score);
+						} catch (ScoringException e) {
+							System.err.println(String.format(Messages.SCORING_ERROR.toString(), e.getMessage()));
+						}
+					}
+
 				} else if (command.equals("help")) {
 
 					System.out.println("Commands:");
@@ -205,18 +437,44 @@ public class CliClient {
 			.findAny();
 	}
 
+	protected Optional<Assignment> getAssignment(Category category, String id) {
+		return category.assignments.values().stream()
+			.filter(assignment -> assignment.id.toString().startsWith(id))
+			.findAny();
+	}
+
 	public static void main(String[] args) {
 		if (args.length == 0) {
+
 			(new CliClient()).main();
-		} else if (args.length == 2 && args[0].equals("grade")) {
-		
+
+		} else if (args.length == 1 && args[0].equals("grade")) {
+
+			Course course;
+			try (
+				ObjectInputStream stream = new ObjectInputStream(System.in);
+			) {
+				course = (Course) stream.readObject();
+			} catch (IOException | ClassNotFoundException e) {
+				System.err.println(String.format(Messages.COURSE_READ.toString(), e.getMessage()));
+				return;
+			}
+
+			try {
+				System.out.println(course.score());
+			} catch (ScoringException e) {
+				System.err.println(String.format(Messages.SCORING_ERROR.toString(), e.getMessage()));
+			}
+
 		} else {
+
 			String className = CliClient.class.getSimpleName();
 			System.err.print(
 				"Usage:\n" +
 				String.format("\tjava %s\n", className) +
 				String.format("\tjava %s grade <file\n", className)
 			);
+
 		}
 	}
 }
