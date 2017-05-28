@@ -15,6 +15,7 @@ import java.io.IOException;
 
 public class CliClient {
 	protected static final String PROMPT = "> ";
+	protected static final String LEADER = "... ";
 
 	protected enum Messages {
 		BAD_COMMAND("Unrecognized command. Try \"help\" for a list of commands."),
@@ -28,7 +29,7 @@ public class CliClient {
 		FILENAME_MISSING("Filename missing."),
 		COURSE_READ("Error reading course: %s"),
 		COURSE_WRITE("Error writing course: %s"),
-		BAD_ATTRIBUTE("Urecognized attribute"),
+		BAD_ATTRIBUTE("Unrecognized attribute."),
 		SCORING_ERROR("Error calculating score: %s");
 
 		protected String message;
@@ -80,12 +81,14 @@ public class CliClient {
 							} catch (IOException e) {
 								System.err.println(String.format(Messages.COURSE_WRITE.toString(), e.getMessage()));
 							}
+						} else {
+							System.err.println(Messages.FILENAME_MISSING);
 						}
 					}
 
 				} else if (command.equals("new course")) {
 
-					System.out.print("course name: ");
+					System.out.print(LEADER + "course name: ");
 					course = new Course(scanner.nextLine());
 
 				} else if (command.equals("course info")) {
@@ -112,7 +115,7 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
 						Optional<Category> result = getCategory(id);
 						if (result.isPresent()) {
@@ -131,7 +134,7 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
 						Optional<Category> result = getCategory(id);
 						if (result.isPresent()) {
@@ -150,12 +153,12 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String categoryId = scanner.nextLine();
 						Optional<Category> categoryResult = getCategory(categoryId);
 						if (categoryResult.isPresent()) {
 							Category category = categoryResult.get();
-							System.out.print("assignment id: ");
+							System.out.print(LEADER + "assignment id: ");
 							String assignmentId = scanner.nextLine();
 							Optional<Assignment> assignmentResult = getAssignment(category, assignmentId);
 							if (assignmentResult.isPresent()) {
@@ -178,14 +181,14 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("name: ");
+						System.out.print(LEADER + "name: ");
 						String name = scanner.nextLine();
 
-						System.out.print("weight: ");
+						System.out.print(LEADER + "weight: ");
 						double weight = scanner.nextDouble();
 						scanner.nextLine();
 
-						System.out.print("uses weights (true|false): ");
+						System.out.print(LEADER + "uses weights (true|false): ");
 						boolean useWeights = scanner.nextBoolean();
 						scanner.nextLine();
 
@@ -203,24 +206,24 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
 						Optional<Category> result = getCategory(id);
 						if (result.isPresent()) {
 							Category category = result.get();
 
-							System.out.print("name: ");
+							System.out.print(LEADER + "name: ");
 							String name = scanner.nextLine();
 
-							System.out.print("weight: ");
+							System.out.print(LEADER + "weight: ");
 							double weight = scanner.nextDouble();
 							scanner.nextLine();
 
-							System.out.print("points earned: ");
+							System.out.print(LEADER + "points earned: ");
 							double earned = scanner.nextDouble();
 							scanner.nextLine();
 
-							System.out.print("points possible: ");
+							System.out.print(LEADER + "points possible: ");
 							double possible = scanner.nextDouble();
 							scanner.nextLine();
 
@@ -242,7 +245,7 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("new name: ");
+						System.out.print(LEADER + "new name: ");
 						String name = scanner.nextLine();
 						course.name = name;
 					}
@@ -252,21 +255,21 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
 						Optional<Category> result = getCategory(id);
 
 						if (result.isPresent()) {
 							Category category = result.get();
-							System.out.print("update attribute (name|weight|uses weights): ");
+							System.out.print(LEADER + "update attribute (name|weight|uses weights): ");
 							String attribute = scanner.nextLine();
 
 							if (attribute.equals("name")) {
-								System.out.print("new name: ");
+								System.out.print(LEADER + "new name: ");
 								String name = scanner.nextLine();
 								category.name = name;
 							} else if (attribute.equals("weight")) {
-								System.out.print("new weight: ");
+								System.out.print(LEADER + "new weight: ");
 								double weight = scanner.nextDouble();
 								scanner.nextLine();
 								try {
@@ -275,7 +278,7 @@ public class CliClient {
 									System.err.println(String.format(Messages.CATEGORY_UPDATE.toString(), e.getMessage()));
 								}
 							} else if (attribute.equals("uses weights")) {
-								System.out.print("uses weights? (true|false): ");
+								System.out.print(LEADER + "uses weights? (true|false): ");
 								boolean useWeights = scanner.nextBoolean();
 								scanner.nextLine();
 								category.useWeights = useWeights;
@@ -292,26 +295,26 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String categoryId = scanner.nextLine();
 						Optional<Category> categoryResult = getCategory(categoryId);
 
 						if (categoryResult.isPresent()) {
 							Category category = categoryResult.get();
-							System.out.print("assignment id: ");
+							System.out.print(LEADER + "assignment id: ");
 							String assignmentId = scanner.nextLine();
 							Optional<Assignment> assignmentResult = getAssignment(category, assignmentId);
 
 							if (assignmentResult.isPresent()) {
 								Assignment assignment = assignmentResult.get();
-								System.out.print("update attribute (name|weight|earned|possible): ");
+								System.out.print(LEADER + "update attribute (name|weight|earned|possible): ");
 								String attribute = scanner.nextLine();
 								if (attribute.equals("name")) {
-									System.out.print("new name: ");
+									System.out.print(LEADER + "new name: ");
 									String name = scanner.nextLine();
 									assignment.name = name;
 								} else if (attribute.equals("weight")) {
-									System.out.print("new weight: ");
+									System.out.print(LEADER + "new weight: ");
 									double weight = scanner.nextDouble();
 									scanner.nextLine();
 									try {
@@ -320,7 +323,7 @@ public class CliClient {
 										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
 									}
 								} else if (attribute.equals("earned")) {
-									System.out.print("points earned: ");
+									System.out.print(LEADER + "points earned: ");
 									double earned = scanner.nextDouble();
 									scanner.nextLine();
 									try {
@@ -329,7 +332,7 @@ public class CliClient {
 										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
 									}
 								} else if (attribute.equals("possible")) {
-									System.out.print("points possible: ");
+									System.out.print(LEADER + "points possible: ");
 									double possible = scanner.nextDouble();
 									scanner.nextLine();
 									try {
@@ -340,6 +343,8 @@ public class CliClient {
 								} else {
 									System.err.println(Messages.BAD_ATTRIBUTE);
 								}
+							} else {
+								System.err.println(Messages.BAD_ASSIGNMENT);
 							}
 						} else {
 							System.err.println(Messages.BAD_CATEGORY);
@@ -351,7 +356,7 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
 						Optional<Category> result = getCategory(id);
 
@@ -367,13 +372,13 @@ public class CliClient {
 					if (course == null) {
 						System.err.println(Messages.NO_COURSE);
 					} else {
-						System.out.print("category id: ");
+						System.out.print(LEADER + "category id: ");
 						String categoryId = scanner.nextLine();
 						Optional<Category> categoryResult = getCategory(categoryId);
 
 						if (categoryResult.isPresent()) {
 							Category category = categoryResult.get();
-							System.out.print("assignment id: ");
+							System.out.print(LEADER + "assignment id: ");
 							String assignmentId = scanner.nextLine();
 							Optional<Assignment> assignmentResult = getAssignment(category, assignmentId);
 
@@ -422,7 +427,7 @@ public class CliClient {
 					System.out.println("\thelp");
 					System.out.println("Send EOF (Ctrl+D) to exit.");
 
-				} else {
+				} else if (!command.isEmpty()) {
 					System.err.println(Messages.BAD_COMMAND);
 				}
 			}
