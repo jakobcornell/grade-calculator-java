@@ -17,7 +17,7 @@ public class CliClient {
 	protected static final String PROMPT = "> ";
 	protected static final String LEADER = "... ";
 
-	protected enum Messages {
+	protected enum Message {
 		BAD_COMMAND("Unrecognized command. Try \"help\" for a list of commands."),
 		NO_COURSE("No course loaded. Use \"new course\" or \"open\" to load one."),
 		BAD_CATEGORY("Unrecognized category."),
@@ -34,7 +34,7 @@ public class CliClient {
 
 		protected String message;
 
-		private Messages(String message) {
+		private Message(String message) {
 			this.message = message;
 		}
 
@@ -61,16 +61,16 @@ public class CliClient {
 						) {
 							course = (Course) courseIn.readObject();
 						} catch (IOException | ClassNotFoundException e) {
-							System.err.println(String.format(Messages.COURSE_READ.toString(), e.getMessage()));
+							System.err.println(String.format(Message.COURSE_READ.toString(), e.getMessage()));
 						}
 					} else {
-						System.err.println(Messages.FILENAME_MISSING);
+						System.err.println(Message.FILENAME_MISSING);
 					}
 
 				} else if (tokens[0].equals("save")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						if (tokens.length == 2) {
 							try (
@@ -79,10 +79,10 @@ public class CliClient {
 							) {
 								courseOut.writeObject(course);
 							} catch (IOException e) {
-								System.err.println(String.format(Messages.COURSE_WRITE.toString(), e.getMessage()));
+								System.err.println(String.format(Message.COURSE_WRITE.toString(), e.getMessage()));
 							}
 						} else {
-							System.err.println(Messages.FILENAME_MISSING);
+							System.err.println(Message.FILENAME_MISSING);
 						}
 					}
 
@@ -94,7 +94,7 @@ public class CliClient {
 				} else if (command.equals("course info")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.println(String.format("name: %s", course.name));
 					}
@@ -102,7 +102,7 @@ public class CliClient {
 				} else if (command.equals("categories")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.println(String.format("categories (%d):", course.categories.size()));
 						for (Category category : course.categories.values()) {
@@ -113,7 +113,7 @@ public class CliClient {
 				} else if (command.equals("category info")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
@@ -125,14 +125,14 @@ public class CliClient {
 							System.out.println(String.format("\tweight: %f", category.getWeight()));
 							System.out.println(String.format("\tuses weights: %b", category.useWeights));
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("assignments")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
@@ -144,14 +144,14 @@ public class CliClient {
 								System.out.println(String.format("\t%s : %s", assignment.id, assignment.name));
 							}
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("assignment info")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String categoryId = scanner.nextLine();
@@ -169,17 +169,17 @@ public class CliClient {
 								System.out.println(String.format("\tearned: %f", assignment.getEarned()));
 								System.out.println(String.format("\tpossible: %f", assignment.getPossible()));
 							} else {
-								System.err.println(Messages.BAD_ASSIGNMENT);
+								System.err.println(Message.BAD_ASSIGNMENT);
 							}
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("add category")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "name: ");
 						String name = scanner.nextLine();
@@ -197,14 +197,14 @@ public class CliClient {
 							category = new Category(name, weight, useWeights);
 							course.categories.put(category.id, category);
 						} catch (IllegalArgumentException e) {
-							System.err.println(String.format(Messages.CATEGORY_CREATE.toString(), e.getMessage()));
+							System.err.println(String.format(Message.CATEGORY_CREATE.toString(), e.getMessage()));
 						}
 					}
 
 				} else if (command.equals("add assignment")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
@@ -232,18 +232,18 @@ public class CliClient {
 								assignment = new Assignment(name, weight, earned, possible);
 								category.assignments.put(assignment.id, assignment);
 							} catch (IllegalArgumentException e) {
-								System.err.println(String.format(Messages.ASSIGNMENT_CREATE.toString(), e.getMessage()));
+								System.err.println(String.format(Message.ASSIGNMENT_CREATE.toString(), e.getMessage()));
 							}
 
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("update course")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "new name: ");
 						String name = scanner.nextLine();
@@ -253,7 +253,7 @@ public class CliClient {
 				} else if (command.equals("update category")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
@@ -275,7 +275,7 @@ public class CliClient {
 								try {
 									category.setWeight(weight);
 								} catch (IllegalArgumentException e) {
-									System.err.println(String.format(Messages.CATEGORY_UPDATE.toString(), e.getMessage()));
+									System.err.println(String.format(Message.CATEGORY_UPDATE.toString(), e.getMessage()));
 								}
 							} else if (attribute.equals("uses weights")) {
 								System.out.print(LEADER + "uses weights? (true|false): ");
@@ -283,17 +283,17 @@ public class CliClient {
 								scanner.nextLine();
 								category.useWeights = useWeights;
 							} else {
-								System.err.println(Messages.BAD_ATTRIBUTE);
+								System.err.println(Message.BAD_ATTRIBUTE);
 							}
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("update assignment")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String categoryId = scanner.nextLine();
@@ -320,7 +320,7 @@ public class CliClient {
 									try {
 										assignment.setWeight(weight);
 									} catch (IllegalArgumentException e) {
-										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
+										System.err.println(String.format(Message.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
 									}
 								} else if (attribute.equals("earned")) {
 									System.out.print(LEADER + "points earned: ");
@@ -329,7 +329,7 @@ public class CliClient {
 									try {
 										assignment.setEarned(earned);
 									} catch (IllegalArgumentException e) {
-										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
+										System.err.println(String.format(Message.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
 									}
 								} else if (attribute.equals("possible")) {
 									System.out.print(LEADER + "points possible: ");
@@ -338,23 +338,23 @@ public class CliClient {
 									try {
 										assignment.setPossible(possible);
 									} catch (IllegalArgumentException e) {
-										System.err.println(String.format(Messages.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
+										System.err.println(String.format(Message.ASSIGNMENT_UPDATE.toString(), e.getMessage()));
 									}
 								} else {
-									System.err.println(Messages.BAD_ATTRIBUTE);
+									System.err.println(Message.BAD_ATTRIBUTE);
 								}
 							} else {
-								System.err.println(Messages.BAD_ASSIGNMENT);
+								System.err.println(Message.BAD_ASSIGNMENT);
 							}
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("remove category")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String id = scanner.nextLine();
@@ -363,14 +363,14 @@ public class CliClient {
 						if (result.isPresent()) {
 							course.categories.remove(result.get().id);
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("remove assignment")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						System.out.print(LEADER + "category id: ");
 						String categoryId = scanner.nextLine();
@@ -385,24 +385,24 @@ public class CliClient {
 							if (assignmentResult.isPresent()) {
 								category.assignments.remove(assignmentResult.get().id);
 							} else {
-								System.err.println(Messages.BAD_ASSIGNMENT);
+								System.err.println(Message.BAD_ASSIGNMENT);
 							}
 						} else {
-							System.err.println(Messages.BAD_CATEGORY);
+							System.err.println(Message.BAD_CATEGORY);
 						}
 					}
 
 				} else if (command.equals("grade")) {
 
 					if (course == null) {
-						System.err.println(Messages.NO_COURSE);
+						System.err.println(Message.NO_COURSE);
 					} else {
 						double score;
 						try {
 							score = course.score();
 							System.out.println(score);
 						} catch (ScoringException e) {
-							System.err.println(String.format(Messages.SCORING_ERROR.toString(), e.getMessage()));
+							System.err.println(String.format(Message.SCORING_ERROR.toString(), e.getMessage()));
 						}
 					}
 
@@ -428,7 +428,7 @@ public class CliClient {
 					System.out.println("Send EOF (Ctrl+D) to exit.");
 
 				} else if (!command.isEmpty()) {
-					System.err.println(Messages.BAD_COMMAND);
+					System.err.println(Message.BAD_COMMAND);
 				}
 			}
 			System.out.print(PROMPT);
@@ -461,14 +461,14 @@ public class CliClient {
 			) {
 				course = (Course) stream.readObject();
 			} catch (IOException | ClassNotFoundException e) {
-				System.err.println(String.format(Messages.COURSE_READ.toString(), e.getMessage()));
+				System.err.println(String.format(Message.COURSE_READ.toString(), e.getMessage()));
 				return;
 			}
 
 			try {
 				System.out.println(course.score());
 			} catch (ScoringException e) {
-				System.err.println(String.format(Messages.SCORING_ERROR.toString(), e.getMessage()));
+				System.err.println(String.format(Message.SCORING_ERROR.toString(), e.getMessage()));
 			}
 
 		} else {
